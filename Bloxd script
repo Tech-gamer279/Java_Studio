@@ -1,0 +1,64 @@
+onPlayerChat = (p, t) => {
+  init(p);
+  let s = getStats(p);
+  let n = api.getEntityName(p);
+  let trimmed = t.trim();
+  let msgLower = trimmed.toLowerCase();
+
+  // --- COMMAND HANDLING SECTION ---
+  if (msgLower.startsWith("?")) {
+    let cmdParts = trimmed.substring(1).trim().split(/\s+/);
+    let cmd = cmdParts[0].toLowerCase();
+
+    if (cmd === "help") {
+      api.sendMessage(p, "--- Quartz Smp Help ---", {color: "#00d4ff"});
+      api.sendMessage(p, "?shop - View items for sale", {color: "#ffd700"});
+      api.sendMessage(p, "?stats - View your progress", {color: "#ff7777"});
+      return false; // Prevents the command from showing in global chat
+    }
+
+    if (cmd === "shop") {
+      api.sendMessage(p, "--- 🛒 SERVER SHOP 🛒 ---", {color: "#ffd700"});
+      // Loop through your shop object and list prices
+      for (let item in shop) {
+        let data = shop[item];
+        api.sendMessage(p, `${data.e} ${data.a}: Buy $${formatNum(data.b)} | Sell $${formatNum(data.s)}`);
+      }
+      return false;
+    }
+
+    if (cmd === "stats") {
+      api.sendMessage(p, `Your Stats: ⚔ ${s.kills} Kills | 💀 ${s.deaths} Deaths | 💰 $${s.money}`, {color: "#55ffff"});
+      return false;
+    }
+  }
+
+  // --- CHAT FORMATTING SECTION (The code you already had) ---
+  let prefix = `[${getKillRank(s.kills)}] `;
+  let prefixStyle = {color:"#FFAA00", fontWeight:"bold"};
+  
+  if (n.toLowerCase() === "_ilostmyaccount_" || n.toLowerCase() === "tnf_quasar") {
+    prefix = "[Coder] ";
+    prefixStyle = {color:"#00aaff", fontWeight:"bold"};
+  } else if (n.toLowerCase() === "devcoder8099195" || n.toLowerCase() === "the_nightss") {
+    const title = "👑 OWNER 👑 ";
+    let styled = [], pos = 0;
+    for (let char of title) {
+      if (char !== " ") {
+        let idx = Math.floor(pos) % colors.length;
+        styled.push({str:char, style:{color:colors[idx], fontWeight:"bold"}});
+        pos += 1.5;
+      } else styled.push({str:" "});
+    }
+    prefix = styled;
+  }
+
+  api.broadcastMessage([
+    ...(Array.isArray(prefix) ? prefix : [{str:prefix, style:prefixStyle}]),
+    {str:n, style:{color:"white", fontWeight:"bold"}},
+    {str:": ", style:{color:"#cccccc"}},
+    {str:t, style:{color:"#e0e0e0"}}
+  ]);
+
+  return false;
+};
